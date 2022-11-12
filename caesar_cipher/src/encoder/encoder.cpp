@@ -42,11 +42,10 @@ else{
 			output += char(b);
 	}	
 	if(vorsich){
-		std::cout<<"Your output encode text is`: "<<std::endl; 
 		return output;
 		}
 	else{
-		return "A string contains numbers";
+		return "Undefine";
 	}
 }
 }

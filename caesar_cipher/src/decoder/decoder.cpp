@@ -34,7 +34,7 @@ else{
 			}
 		
 		}else{
-			return "not a vild symbol in string";
+			return "Undefined";
 		}
 	
 		output += char(b);
