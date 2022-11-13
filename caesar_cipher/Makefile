@@ -1,49 +1,59 @@
+all:create_directories main
+CC=g++
+CPPFLAGS=-c -Wall
+SHARED = -fPIC -shared 
+DECODE = obj/decoder/decoder.o  
+ENCODE = obj/encoder/encoder.o  
+LIB_DEC = lib/libdecoder.so
+LIB_ENC = lib/libencoder.so:
 
-all:create_directories create_obj lib/decoder/libdecoder.so lib/encoder/libencoder.so lib/libunit_test.a main
-
+UNIT_TEST = /unit_test/unit_test
+SRC_ENCODER = src/encoder/encoder.cpp
+SRC_DECODER = src/decoder/decoder.cpp
 
 create_directories:
 	@echo "creating directories..."
-	@mkdir -p lib
-	@mkdir -p bin
-
-create_obj:
+	@mkdir -p lib bin
 	@mkdir -p obj/encoder
 	@mkdir -p obj/decoder
 	@mkdir -p obj/unit_test
+
+
 #decoder
-obj/decoder/decoder.o:obj/decoder
-	@echo "creating object file for decoder"
-	@g++ -I./inc/decoder -c src/decoder/decoder.cpp -o obj/decoder/decoder.o
+$(DECODE):
+	$(ENCODE): @$(CC) -fPIC -I./inc/encoder $(CPPFLAGS) $(SRC_ENCODER) -o $@ 
+	@$(CC) -fPIC -I./inc/decoder $(CPPFLAGS) $(SRC_DECODER) -o $@
 
-lib/decoder/libdecoder.so:obj/decoder/decoder.o
-	@echo "creating Dinamic Library for decoder..."
-	@g++ -fPIC -shared obj/decoder/decoder.o -o lib/libdecoder.so
-#encoder
-obj/encoder/encoder.o:obj/encoder
-	@echo "creating object file for encoder"
-	@g++ -fPIC -I./inc/encoder -c src/encoder/encoder.cpp -o obj/encoder/encoder.o
+$(ENCODE):
+	@$(CC) -fPIC -I./inc/encoder $(CPPFLAGS) $(SRC_ENCODER) -o $@ 
+	
 
-lib/encoder/libencoder.so:obj/encoder/encoder.o
-	@echo "creating Dinamic Libreary for encoder..."
-	@g++ -fPIC -shared  obj/encoder/encoder.o -o lib/libencoder.so
+$(LIB_DEC) : $(DECODE)
+	@echo "decoder..."
+	@$(CC) $(SHARED) $^ -o $@
+
+lib/libencoder.so : $(ENCODE)
+	@echo "encoder..."
+	@$(CC) $(SHARED) $^ -o $@
+
 
 #unit_test
 
-lib/libunit_test.a:obj/unit_test/unit_test.o
+lib/%.a: obj/unit_test/unit_test.o
 	@echo "unit_test static library declareded.."
-	@ar cvq lib/libunit_test.a obj/unit_test/unit_test.o
+	@ar cvq lib/libunit_test.a obj/$(UNIT_TEST).o
+
 
 
 obj/unit_test/unit_test.o:
 	@echo "created obj link..."
-	@g++ -c  src/unit_test/unit_test.cpp -I inc -o obj/unit_test/unit_test.o
+	@$(CC) $(CPPFLAGS)  src/$(UNIT_TEST).cpp -I inc -o obj/$(UNIT_TEST).o
 
 
 
-main:
+main:lib/libdecoder.so lib/libencoder.so lib/libunit_test.a
 	@echo "Starting Program...."
-	@g++ src/main.cpp -L./lib -I./inc/ -Wall -ldecoder -lencoder -lunit_test -o bin/main  
+	@$(CC) src/main.cpp -L./lib -I./inc/ -Wall -ldecoder -lencoder -lunit_test -o bin/main  
 	@export LD_LIBRARY_PATH=`pwd`/lib  && ./bin/main
 
 remove:
