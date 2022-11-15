@@ -1,7 +1,7 @@
-#include <iostream>
-#include "unit_test/unit_test.h"
-#include "encoder/encoder.h"
-#include "decoder/decoder.h"
+
+#include "encoder.h"
+#include "decoder.h"
+#include "unit_test.h"
 
 
 int main(){
@@ -11,14 +11,20 @@ int main(){
 	while(true){
 		std::string before_encoder;
 		
-		std::cout<<"Press word for stop put break"<<std::endl;	
+		std::cout<<"Press word for run,and for stop put break"<<std::endl;	
 		std::getline(std::cin,before_encoder);
 		if(before_encoder == "break"){
 			break;
 		}
 		std::cout<<"Press key"<<std::endl;
-		std::cin>>key;
-		
+		std::cin>>key;	
+        if (std::cin.fail())
+        {
+           std::cout<<"emergency regime activated!!!!"<<std::endl;
+           std::cin.clear();  
+           std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+           return main();
+        }
 		std::string after_encoder = encoder(before_encoder, key);
 		std::cout<<after_encoder<<std::endl;
 		std::string after_decoder = decoder(after_encoder, key);
